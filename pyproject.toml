@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "sympla-integration"
+version = "0.1.0"
+description = ""
+authors = ["keven silva <keven.almeida.8179@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.2.4"
+psycopg2-binary = "^2.9.10"
+requests = "^2.32.4"
+djangorestframework = "^3.16.0"
+gunicorn = "^23.0.0"
+python-decouple = "^3.8"
+python-dateutil = "^2.9.0.post0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.3.0"
+mypy = "^1.17.0"
+ruff = "^0.12.4"
+taskipy = "^1.14.1"
+# Ferramentas de Teste
+pytest-django = "^4.11.1"
+coverage = "^7.9.2"
+pytest-cov = "^6.2.1"
+
+
+[tool.pytest.ini_options]
+pythonpath = '.'
+addopts = '-p no:warnings'
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.taskipy.tasks]
+run = 'python manage.py runserver localhost:8000'
+migrations = 'python manage.py makemigrations && python manage.py migrate'
+pre_test = 'task lint'
+test = 'pytest -s -x --cov=. -vv'
+post_test = 'coverage html'
+lint = 'ruff check . && ruff check . --diff'
+format = 'ruff check . --fix && ruff format .'
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
