@@ -60,7 +60,7 @@ Este projeto utiliza ferramentas e padrões da indústria para garantir uma solu
     # .env
     SECRET_KEY='sua-chave-secreta-do-django'
     DEBUG=True
-    ALLOWED_HOSTS=localhost,127.0.0.1
+    ALLOWED_HOSTS=localhost,127.0.0.1,app
 
     POSTGRES_DB=sympla_events_db
     POSTGRES_USER=sympla_user
