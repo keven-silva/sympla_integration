@@ -46,7 +46,7 @@ Este projeto utiliza ferramentas e padrões da indústria para garantir uma solu
 
 1.  **Clone o repositório:**
     ```bash
-    git clone <url-do-seu-repositorio>
+    git clone https://github.com/keven-silva/sympla_integration.git
     cd sympla_integration
     ```
 

@@ -1,2 +1,4 @@
-Dockerfile
+Dockerfile.app
+Dockerfile.nginx
+.env
 docker-compose.yml
