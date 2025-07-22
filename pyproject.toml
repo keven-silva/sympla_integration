@@ -48,6 +48,7 @@ quote-style = 'single'
 [tool.taskipy.tasks]
 run = 'python manage.py runserver localhost:8000'
 migrations = 'python manage.py makemigrations && python manage.py migrate'
+import_events = 'python manage.py import_sympla_events'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=. -vv'
 post_test = 'coverage html'
