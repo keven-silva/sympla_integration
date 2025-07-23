@@ -42,43 +42,131 @@ Este projeto utiliza ferramentas e padrões da indústria para garantir uma solu
 
 ## 🚀 Começando
 
-### Pré-requisitos
+Este projeto pode ser executado de duas maneiras: **Localmente** (com Python/Poetry/Pip e SQLite) ou com **Docker** (com PostgreSQL e Nginx).
 
--   [Docker](https://www.docker.com/get-started)
--   [Docker Compose](https://docs.docker.com/compose/install/)
+### Pré-requisitos Comuns
+- Git
+- Python 3.12+
 
-### Instalação e Configuração
+---
 
-1.  **Clone o repositório:**
+### Opção 1: Rodando Localmente (Desenvolvimento Rápido com SQLite)
+
+Esta abordagem é ideal para desenvolver e testar novas funcionalidades rapidamente, sem a necessidade de subir todo o ambiente Docker. Escolha a sub-seção que corresponde à sua ferramenta de preferência.
+
+#### **1.1: Usando Poetry (Recomendado)**
+
+**Pré-requisitos:** [Poetry](https://python-poetry.org/docs/#installation)
+
+1.  **Clone o repositório e entre na pasta:**
     ```bash
     git clone https://github.com/keven-silva/sympla_integration.git
     cd sympla_integration
     ```
 
-2.  **Crie o arquivo de ambiente:**
-    Copie o exemplo `.env.example` para `.env` e preencha com seus dados.
+2.  **Crie o arquivo de ambiente (`.env`):**
+    Um arquivo de exemplo para o setup local é fornecido. Copie-o:
     ```bash
-    cp .env.example .env
+    cp .env.local.example .env
     ```
-    Agora, abra o arquivo `.env` e **adicione seu token real da API da Sympla** e outras configurações:
-    ```dotenv
-    # .env
-    # Segurança do Django
-    SECRET_KEY='sua-chave-secreta-do-django'
-    DEBUG=True
-    ALLOWED_HOSTS=localhost,127.0.0.1
+    Este arquivo já está pré-configurado para usar SQLite. Você só precisa **adicionar seu token da API da Sympla**.
 
-    # Banco de Dados
-    POSTGRES_DB=sympla_events_db
-    POSTGRES_USER=sympla_user
-    POSTGRES_PASSWORD=strongpassword
-    POSTGRES_HOST=db
-    POSTGRES_PORT=5432
-
-    # API da Sympla
-    SYMPLA_API_TOKEN="SEU_TOKEN_REAL_DA_API_DA_SYMPLA_AQUI"
-    SYMPLA_BASE_URL="[https://api.sympla.com.br/public/v3/events](https://api.sympla.com.br/public/v3/events)"
+3.  **Instale as dependências:**
+    O Poetry criará um ambiente virtual e instalará tudo que o projeto precisa.
+    ```bash
+    poetry install
     ```
+
+4.  **Ative o Ambiente Virtual:**
+    ```bash
+    poetry shell
+    ```
+
+5.  **Aplique as migrações do banco de dados:**
+    Este comando criará o arquivo `db.sqlite3` na raiz do projeto.
+    ```bash
+    python manage.py migrate
+    ```
+
+6.  **Execute a importação e inicie o servidor:**
+    ```bash
+    # Para importar os dados
+    python manage.py import_sympla_events
+
+    # Para iniciar o servidor de desenvolvimento
+    python manage.py runserver
+    ```
+    A API estará disponível em `http://localhost:8000/api/events/`.
+
+#### **1.2: Usando Pip e Venv (Padrão Python)**
+
+**Pré-requisitos:** Python e Pip.
+
+> **Nota:** Este método requer um arquivo `requirements.txt`. Se ele não existir no projeto, o mantenedor pode gerá-lo a partir do Poetry com o comando:
+> `poetry export -f requirements.txt --output requirements.txt --without-hashes`
+
+1.  **Clone o repositório e entre na pasta:**
+    ```bash
+    git clone https://github.com/keven-silva/sympla_integration.git
+    cd sympla_integration
+    ```
+2.  **Crie o arquivo de ambiente (`.env`):**
+    ```bash
+    cp .env.local.example .env
+    ```
+    Lembre-se de **adicionar seu token da API da Sympla** no arquivo `.env`.
+
+3.  **Crie e Ative o Ambiente Virtual:**
+    ```bash
+    # Crie o ambiente
+    python3 -m venv .venv
+
+    # Ative o ambiente (Linux/macOS)
+    source .venv/bin/activate
+
+    # Ative o ambiente (Windows)
+    .\.venv\Scripts\activate
+    ```
+
+4.  **Instale as dependências:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+5.  **Aplique as migrações do banco de dados:**
+    ```bash
+    python manage.py migrate
+    ```
+
+6.  **Execute a importação e inicie o servidor:**
+    ```bash
+    # Para importar os dados
+    python manage.py import_sympla_events
+
+    # Para iniciar o servidor de desenvolvimento
+    python manage.py runserver
+    ```
+    A API estará disponível em `http://localhost:8000/api/events/`.
+
+---
+
+### Opção 2: Rodando com Docker e PostgreSQL (Ambiente similar à Produção)
+
+Esta abordagem cria um ambiente completo e isolado, idêntico ao que seria usado em produção.
+
+**Pré-requisitos:** Docker e Docker Compose.
+
+1.  **Clone o repositório e entre na pasta:**
+    ```bash
+    git clone https://github.com/keven-silva/sympla_integration.git
+    cd sympla_integration
+    ```
+2.  **Crie o arquivo de ambiente (`.env`):**
+    Use o arquivo de exemplo para Docker:
+    ```bash
+    cp .env.docker.example .env
+    ```
+    Abra o arquivo `.env` e **adicione seu token da API da Sympla**. As credenciais do banco de dados já estão configuradas para funcionar com o `docker-compose.yml`.
 
 3.  **Construa e inicie os contêineres:**
     ```bash
@@ -87,13 +175,24 @@ Este projeto utiliza ferramentas e padrões da indústria para garantir uma solu
 
 4.  **Aplique as migrações do banco de dados:**
     ```bash
-    docker-compose exec web python manage.py migrate
+    docker-compose exec app python manage.py migrate
     ```
 
-## Como Usar
+5.  **Execute a importação:**
+    ```bash
+    docker-compose exec app python manage.py import_sympla_events
+    ```
+    A API estará disponível em `http://localhost/` (ou a porta que você configurou para o Nginx no `docker-compose.yml`). O endpoint completo será, por exemplo, `http://localhost/api/events/`.
 
-### 1. Execute o Comando de Importação
 
-Para buscar eventos da API da Sympla e popular seu banco de dados local, execute:
-```bash
-docker-compose exec web python manage.py import_sympla_events
+## ✅ Executando os Testes
+
+-   **Localmente (com Poetry ou Venv ativo):**
+    ```bash
+    pytest
+    ```
+
+-   **Com Docker:**
+    ```bash
+    docker-compose exec app pytest
+    ```
