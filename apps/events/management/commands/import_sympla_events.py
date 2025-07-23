@@ -39,6 +39,7 @@ class Command(BaseCommand):
                             defaults={
                                 'name': validated_event.name,
                                 'start_date': validated_event.start_date,
+                                'end_date': validated_event.end_date,
                                 'event_type': validated_event.event_type,
                                 'venue_name': validated_event.address.name,
                                 'city': validated_event.address.city,
