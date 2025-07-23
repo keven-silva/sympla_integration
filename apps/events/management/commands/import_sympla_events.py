@@ -3,6 +3,7 @@ import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
+from pydantic import ValidationError
 
 from apps.events.models import Event, LoadBatch
 from apps.events.schemas import SymplaEventSchema
@@ -54,11 +55,11 @@ class Command(BaseCommand):
                         else:
                             logger.info(f'Event updated: {event_obj.name}')
 
-                    except (KeyError, TypeError) as e:
+                    except ValidationError as e:
+                        event_id = event_data.get('id', 'N/A')
                         logger.warning(
-                            'Skipping event with invalid/missing data: '
-                            f'{event_data.get("id")}. '
-                            f'Error: {e}'
+                            f"Skipping event due to validation error. ID: {event_id}. "
+                            f"Details: {e.json()}"
                         )
                         continue
 

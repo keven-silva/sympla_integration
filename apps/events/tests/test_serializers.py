@@ -3,49 +3,39 @@ from django.utils import timezone
 
 from apps.events.models import Event, LoadBatch
 from apps.events.serializers import EventSerializer
+from utils.enums import EventType, Status
 
 
 @pytest.mark.django_db
-def test_event_serializer_serialization():
+def test_event_serializer_contains_expected_fields():
     """
-    Test that the EventSerializer correctly serializes an Event instance.
+        Tests that the EventSerializer serializes an Event object with the 
+        correct new fields.
     """
-    batch = LoadBatch.objects.create(status='SUCCESS')
-    SYMPLA_ID = 456
+    batch = LoadBatch.objects.create(status=Status.SUCCESS.name)
 
     event_obj = Event.objects.create(
-        sympla_id=SYMPLA_ID,
-        name='Evento Serializado',
+        event_id='ser_test_456',
+        name="Serialized Event",
         start_date=timezone.now(),
-        venue_name='Local da API',
-        city='Cidade da API',
-        category='API',
-        load_batch=batch,
+        end_date=timezone.now(),
+        event_type=EventType.ONLINE.name,
+        category="API",
+        sub_category="REST",
+        load_batch=batch
     )
 
     serializer = EventSerializer(instance=event_obj)
     data = serializer.data
 
-    expected_keys = [
-        'id',
-        'sympla_id',
-        'name',
-        'start_date',
-        'venue_name',
-        'city',
-        'category',
-        'load_batch',
-    ]
-    assert set(data.keys()) == set(expected_keys)
+    expected_keys = {
+        'id', 'event_id', 'name', 'start_date', 'end_date', 'venue_name',
+        'city', 'category', 'sub_category', 'load_batch', 'event_type'
+    }
 
-    # Verify that the serialized values match the original object
-    assert data['id'] == event_obj.id
-    assert data['sympla_id'] == SYMPLA_ID
-    assert data['name'] == 'Evento Serializado'
-    assert data['venue_name'] == 'Local da API'
-    assert data['city'] == 'Cidade da API'
-    assert data['category'] == 'API'
-    assert data['load_batch'] == batch.id
+    assert set(data.keys()) == expected_keys
+    assert data['name'] == "Serialized Event"
+    assert data['event_type'] == EventType.ONLINE.name
 
 
 @pytest.mark.django_db
@@ -54,16 +44,19 @@ def test_event_serializer_deserialization_and_create():
     Test that the EventSerializer can validate data and create a new Event.
     """
     batch = LoadBatch.objects.create(status='PENDING')
-    SYMPLA_ID = 789
 
     event_data = {
-        'sympla_id': SYMPLA_ID,
+        'id': 1,
+        'event_id':'evt001',
         'name': 'Novo Evento via Serializer',
         'start_date': timezone.now(),
+        'end_date': timezone.now(),
+        'event_type': EventType.PRESENTIAL.name,
         'venue_name': 'Local do Novo Evento',
         'city': 'Nova Cidade',
-        'category': 'Testes',
-        'load_batch': batch.id,
+        'category': 'Música',
+        'sub_category': 'Rock',
+        'load_batch': batch.id
     }
 
     serializer = EventSerializer(data=event_data)
@@ -72,7 +65,7 @@ def test_event_serializer_deserialization_and_create():
 
     assert Event.objects.count() == 1
     assert event_instance.name == 'Novo Evento via Serializer'
-    assert event_instance.sympla_id == SYMPLA_ID
+    assert event_instance.event_id == 'evt001'
     assert event_instance.load_batch == batch
 
 

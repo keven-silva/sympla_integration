@@ -2,7 +2,7 @@ import pytest
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-
+from utils.enums import EventType
 from apps.events.models import Event, LoadBatch
 
 
@@ -15,21 +15,25 @@ def test_list_events_api_view():
 
     batch = LoadBatch.objects.create(status='SUCCESS')
     Event.objects.create(
-        sympla_id=1,
-        name='Evento A',
+        event_id='evt_test_123',
+        name="Test Event",
         start_date=timezone.now(),
-        venue_name='Local A',
-        city='Cidade A',
-        category='Cat A',
-        load_batch=batch,
+        end_date=timezone.now(),
+        event_type=EventType.PRESENTIAL.name,
+        venue_name="Test Venue",
+        city="Test City",
+        category="Technology",
+        sub_category="Python",
+        load_batch=batch
     )
     Event.objects.create(
-        sympla_id=2,
-        name='Evento B',
+       event_id='evt_test_1234',
+        name='Test Event B',
         start_date=timezone.now(),
-        venue_name='Local B',
-        city='Cidade B',
-        category='Cat B',
+        end_date=timezone.now(),
+        event_type=EventType.ONLINE.name,
+        category="Marketing",
+        sub_category="workshop",
         load_batch=batch,
     )
 
@@ -41,4 +45,5 @@ def test_list_events_api_view():
 
     assert len(response.data) == EVENT_COUNT
 
-    assert response.data[0]['name'] == 'Evento B'
+    assert response.data[0]['name'] == 'Test Event B'
+    assert response.data[0]['event_type'] == EventType.ONLINE.name,
