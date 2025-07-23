@@ -46,4 +46,4 @@ def test_list_events_api_view():
     assert len(response.data) == EVENT_COUNT
 
     assert response.data[0]['name'] == 'Test Event B'
-    assert response.data[0]['event_type'] == EventType.ONLINE.name,
+    assert response.data[0]['event_type'] == EventType.ONLINE.name
