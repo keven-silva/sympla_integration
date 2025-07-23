@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 
 class SymplaService:
     """
-    Camada de serviço isolada para interagir com a API da Sympla.
-    Encapsula toda a lógica de requisição, autenticação, paginação e
-    tratamento de erros.
+    Service class to interact with the Sympla API.
     """
 
     def __init__(self):

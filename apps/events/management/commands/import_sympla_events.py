@@ -1,13 +1,13 @@
 import logging
 
-from dateutil.parser import parse as parse_datetime
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 
 from apps.events.models import Event, LoadBatch
+from apps.events.schemas import SymplaEventSchema
 from apps.events.services import SymplaService
-from utils.enums import EventType, Status
+from utils.enums import Status
 
 logger = logging.getLogger(__name__)
 
@@ -30,32 +30,20 @@ class Command(BaseCommand):
             with transaction.atomic():
                 for event_data in api_events:
                     try:
-                        start_date = parse_datetime(event_data['start_date'])
-                        end_date = parse_datetime(event_data['end_date'])
-
-                        venue_name = event_data.get('address', {}).get('name')
-                        city = event_data.get('address', {}).get('city')
-                        event_type = (
-                            EventType.ONLINE.name
-                            if not venue_name or not city
-                            else EventType.PRESENTIAL.name
+                        validated_event = SymplaEventSchema.model_validate(
+                            event_data
                         )
 
                         event_obj, created = Event.objects.update_or_create(
-                            event_id=event_data['id'],
+                            event_id=validated_event.id,
                             defaults={
-                                'name': event_data['name'],
-                                'event_type': event_type,
-                                'start_date': start_date,
-                                'end_date': end_date,
-                                'venue_name': venue_name,
-                                'city': city,
-                                'category': event_data['category_prim'][
-                                    'name'
-                                ],
-                                'sub_category': event_data['category_sec'][
-                                    'name'
-                                ],
+                                'name': validated_event.name,
+                                'start_date': validated_event.start_date,
+                                'event_type': validated_event.event_type,
+                                'venue_name': validated_event.address.name,
+                                'city': validated_event.address.city,
+                                'category': validated_event.category_prim,
+                                'sub_category': validated_event.category_sec,
                                 'load_batch': batch,
                             },
                         )

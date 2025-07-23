@@ -23,9 +23,6 @@ class LoadBatch(models.Model):
         default=0, verbose_name='Events Imported Count'
     )
 
-    def __str__(self):
-        return f'LoadBatch: {self.id} - {self.get_status_display()}'
-
     class Meta:
         verbose_name = 'Load Batch'
         verbose_name_plural = 'Load Batches'
