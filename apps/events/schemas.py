@@ -23,7 +23,9 @@ class SymplaEventSchema(BaseModel):
     @computed_field
     @property
     def event_type(self) -> str:
-        if not self.address.name and not self.address.city:
+        if not self.address or (
+            not self.address.name and not self.address.city
+        ):
             return EventType.ONLINE.name
         return EventType.PRESENTIAL.name
 
@@ -32,14 +34,8 @@ class SymplaEventSchema(BaseModel):
         if isinstance(value, str):
             return parse_datetime(value)
 
-    @field_validator('category_prim', mode='before')
+    @field_validator('category_prim', 'category_sec', mode='before')
     def get_category_name(cls, value):
-        if isinstance(value, dict) and 'name' in value:
-            return value['name']
-        return None
-
-    @field_validator('category_sec', mode='before')
-    def get_sub_category_name(cls, value):
         if isinstance(value, dict) and 'name' in value:
             return value['name']
         return None

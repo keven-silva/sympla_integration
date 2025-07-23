@@ -100,6 +100,6 @@ def test_service_initialization_fails_without_token(mock_config):
     with pytest.raises(ValueError) as excinfo:  # noqa: PT011
         SymplaService()
 
-    assert 'Sympla API token (SYMPLA_API_TOKEN) is not configured.' in str(
+    assert 'Sympla API SYMPLA_API_TOKEN is not configured.' in str(
         excinfo.value
     )

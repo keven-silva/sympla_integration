@@ -8,68 +8,82 @@ from requests.exceptions import HTTPError, RequestException, Timeout
 logger = logging.getLogger(__name__)
 
 
+class SymplaAPIClient:
+    """Handles low-level communication with Sympla API."""
+
+    def __init__(self, base_url: str, token: str):
+        self.base_url = base_url
+        self.session = requests.Session()
+        self.session.headers.update({'S_Token': token})
+
+    def get(self, url: str, timeout: int = 15) -> Dict[str, Any] | None:
+        """Make a GET request to the API with error handling."""
+        try:
+            response = self.session.get(url, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except Timeout:
+            logger.error('Timeout on request to Sympla API: %s', url)
+        except HTTPError as http_err:
+            self._log_http_error(http_err, url)
+        except RequestException as e:
+            logger.error('Communication error with Sympla API: %s', e)
+        return None
+
+    def _log_http_error(self, error: HTTPError, url: str) -> None:
+        """Log HTTP errors with detailed information."""
+        status_code = getattr(error.response, 'status_code', 'unknown')
+        logger.error(
+            'HTTP error accessing Sympla API: %s - Status: %s - URL: %s',
+            error,
+            status_code,
+            url,
+        )
+
+
 class SymplaService:
-    """
-    Service class to interact with the Sympla API.
-    """
+    """Service class to interact with the Sympla API."""
 
     def __init__(self):
-        self.token = config('SYMPLA_API_TOKEN', default=None)
-        self.base_url = config('SYMPLA_BASE_URL', default=None)
+        self.token = self._get_config_value('SYMPLA_API_TOKEN')
+        self.base_url = self._get_config_value('SYMPLA_BASE_URL')
+        self.api_client = SymplaAPIClient(self.base_url, self.token)
 
-        if not self.token:
-            raise ValueError(
-                'Sympla API token (SYMPLA_API_TOKEN) is not configured.'
-            )
-
-        self.session = requests.Session()
-        self.session.headers.update({'S_Token': self.token})
+    def _get_config_value(self, key: str) -> str:
+        """Get required configuration value or raise ValueError."""
+        value = config(key, default=None)
+        if not value:
+            raise ValueError(f'Sympla API {key} is not configured.')
+        return value
 
     def fetch_events(self) -> List[Dict[str, Any]]:
         """
         Fetches all events from Sympla, handling pagination.
 
         Returns:
-            list[dict]: A list of dictionaries, where each one represents an
-                        event.
-                        Returns an empty list in case of communication error.
+            List of event dictionaries. Returns empty list on communication error.
         """
-        all_events = []
+        all_events: List[Dict[str, Any]] = []
         next_page_url = self.base_url
 
         while next_page_url:
-            logger.info(f'Fetching events from URL: {next_page_url}')
-            try:
-                response = self.session.get(next_page_url, timeout=15)
+            logger.info('Fetching events from URL: %s', next_page_url)
+            data = self.api_client.get(next_page_url)
 
-                response.raise_for_status()
-
-                data = response.json()
-
-                all_events.extend(data.get('data', []))
-
-                pagination_info = data.get('pagination', {})
-                if pagination_info.get('has_next'):
-                    next_page_url = pagination_info.get('next_page_url')
-                else:
-                    next_page_url = None
-
-            except Timeout:
-                logger.error(
-                    'Timeout on request to Sympla API: %s',
-                    next_page_url,
-                )
-                break
-            except HTTPError as http_err:
-                logger.error(
-                    'HTTP error accessing Sympla API: %s - Status: %s',
-                    http_err,
-                    http_err.response.status_code,
-                )
-                break
-            except RequestException as e:
-                logger.error('Communication error with Sympla API: %s', e)
+            if not data:
                 break
 
-        logger.info(f'Total of {len(all_events)} events found in Sympla API.')
+            all_events.extend(data.get('data', []))
+            next_page_url = self._get_next_page_url(data)
+
+        logger.info('Total of %d events found in Sympla API.', len(all_events))
         return all_events
+
+    def _get_next_page_url(self, data: Dict[str, Any]) -> str | None:
+        """Extract next page URL from pagination data if available."""
+        pagination = data.get('pagination', {})
+        return (
+            pagination.get('next_page_url')
+            if pagination.get('has_next')
+            else None
+        )
