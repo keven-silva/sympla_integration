@@ -1,6 +1,6 @@
 from django.db import models
 
-from utils.enums import LogLevel, Status
+from utils.enums import EventType, Status
 
 
 class LoadBatch(models.Model):
@@ -36,14 +36,31 @@ class Event(models.Model):
     Represents an event loaded from an external source.
     """
 
-    sympla_id = models.PositiveIntegerField(
-        unique=True, verbose_name='ID Sympla'
+    event_id = models.CharField(
+        max_length=50, unique=True, verbose_name='Event ID'
     )
     name = models.CharField(max_length=255, verbose_name='Event Name')
     start_date = models.DateTimeField(verbose_name='Start Date')
-    venue_name = models.CharField(max_length=255, verbose_name='Venue Name')
-    city = models.CharField(max_length=100, verbose_name='City')
+    end_date = models.DateTimeField(
+        blank=True, null=True, verbose_name='End Date'
+    )
+    event_type = models.CharField(
+        max_length=20,
+        choices=EventType.choices(),
+        blank=True,
+        null=True,
+        verbose_name='Event Type',
+    )
+    venue_name = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name='Venue Name'
+    )
+    city = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name='City'
+    )
     category = models.CharField(max_length=100, verbose_name='Category')
+    sub_category = models.CharField(
+        max_length=100, verbose_name='Sub Category'
+    )
     load_batch = models.ForeignKey(
         LoadBatch, on_delete=models.CASCADE, related_name='events'
     )
@@ -54,36 +71,4 @@ class Event(models.Model):
         ordering = ['-start_date']
 
     def __str__(self):
-        return f'{self.name} ({self.sympla_id})'
-
-
-class Log(models.Model):
-    """
-    Stores log entries for various operations.
-    """
-
-    timestamp = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Timestamp',
-    )
-    level = models.CharField(
-        max_length=20, choices=LogLevel.choices(), verbose_name='Level'
-    )
-    message = models.TextField(verbose_name='Message')
-    load_batch = models.ForeignKey(
-        LoadBatch,
-        on_delete=models.CASCADE,
-        related_name='logs',
-        null=True,
-        blank=True,
-        verbose_name='Load Batch',
-    )
-
-    def __str__(self):
-        timestamp_str = self.timestamp.strftime('%Y-%m-%d %H:%M')
-        return f'Log: {self.id} - {self.level} - {timestamp_str}'
-
-    class Meta:
-        verbose_name = 'Log Entry'
-        verbose_name_plural = 'Log Entries'
-        ordering = ['-timestamp']
+        return f'{self.name} ({self.event_id})'

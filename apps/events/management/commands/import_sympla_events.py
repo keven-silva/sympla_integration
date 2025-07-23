@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.events.models import Event, LoadBatch
 from apps.events.services import SymplaService
+from utils.enums import EventType, Status
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Starting Sympla events import...')
 
-        batch = LoadBatch.objects.create(status='RUNNING')
+        batch = LoadBatch.objects.create(status=Status.PENDING.name)
         logger.info(f'New load batch created: {batch.id}')
 
         events_processed_count = 0
@@ -30,15 +31,31 @@ class Command(BaseCommand):
                 for event_data in api_events:
                     try:
                         start_date = parse_datetime(event_data['start_date'])
+                        end_date = parse_datetime(event_data['end_date'])
+
+                        venue_name = event_data.get('address', {}).get('name')
+                        city = event_data.get('address', {}).get('city')
+                        event_type = (
+                            EventType.ONLINE.name
+                            if not venue_name or not city
+                            else EventType.PRESENTIAL.name
+                        )
 
                         event_obj, created = Event.objects.update_or_create(
-                            sympla_id=event_data['id'],
+                            event_id=event_data['id'],
                             defaults={
                                 'name': event_data['name'],
+                                'event_type': event_type,
                                 'start_date': start_date,
-                                'venue_name': event_data['venue']['name'],
-                                'city': event_data['venue']['city'],
-                                'category': event_data['category']['name'],
+                                'end_date': end_date,
+                                'venue_name': venue_name,
+                                'city': city,
+                                'category': event_data['category_prim'][
+                                    'name'
+                                ],
+                                'sub_category': event_data['category_sec'][
+                                    'name'
+                                ],
                                 'load_batch': batch,
                             },
                         )
@@ -56,7 +73,7 @@ class Command(BaseCommand):
                         )
                         continue
 
-            batch.status = 'SUCCESS'
+            batch.status = Status.SUCCESS.name
             self.stdout.write(
                 self.style.SUCCESS('Import finished successfully!')
             )
