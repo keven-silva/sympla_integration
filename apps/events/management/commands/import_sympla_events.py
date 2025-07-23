@@ -58,8 +58,9 @@ class Command(BaseCommand):
                     except ValidationError as e:
                         event_id = event_data.get('id', 'N/A')
                         logger.warning(
-                            f"Skipping event due to validation error. ID: {event_id}. "
-                            f"Details: {e.json()}"
+                            'Skipping event due to validation error.'
+                            f'ID: {event_id}. '
+                            f'Details: {e.json()}'
                         )
                         continue
 

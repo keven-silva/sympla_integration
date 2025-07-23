@@ -17,5 +17,5 @@ class EventSerializer(serializers.ModelSerializer):
             'category',
             'sub_category',
             'load_batch',
-            'event_type'
+            'event_type',
         ]

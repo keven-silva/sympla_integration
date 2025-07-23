@@ -8,7 +8,10 @@ from utils.enums import EventType
 
 
 def test_presential_event_schema_validation():
-    """Tests that a valid payload for a presential event is correctly parsed."""
+    """
+    Tests that a valid payload for a presential event is correctly
+    parsed.
+    """
     payload = {
         'id': '12345',
         'name': 'Conferência de Python',
@@ -36,7 +39,7 @@ def test_online_event_schema_validation():
         'name': 'Live sobre Django',
         'start_date': '2025-11-05T19:00:00',
         'end_date': '2025-11-05T20:00:00',
-        'address': {'address_num': 0 },
+        'address': {'address_num': 0},
         'category_prim': {'name': 'Tecnologia'},
         'category_sec': {'name': 'Web Development'},
     }
@@ -47,14 +50,18 @@ def test_online_event_schema_validation():
     assert validated_event.address.name is None
     assert validated_event.address.city is None
 
+
 def test_schema_raises_validation_error_on_missing_data():
-    """Tests that Pydantic raises a ValidationError for missing required fields."""
+    """
+    Tests that Pydantic raises a ValidationError for missing required
+    fields.
+    """
     invalid_payload = {
         'id': '99999',
         # 'name' field is missing
         'start_date': '2025-12-01T10:00:00',
         'end_date': '2025-12-01T11:00:00',
-        'address': {"address_num": 0},
+        'address': {'address_num': 0},
         'category_prim': {'name': 'Outros'},
         'category_sec': {'name': 'Geral'},
     }

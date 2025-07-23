@@ -9,32 +9,41 @@ from utils.enums import EventType, Status
 @pytest.mark.django_db
 def test_event_serializer_contains_expected_fields():
     """
-        Tests that the EventSerializer serializes an Event object with the 
-        correct new fields.
+    Tests that the EventSerializer serializes an Event object with the
+    correct new fields.
     """
     batch = LoadBatch.objects.create(status=Status.SUCCESS.name)
 
     event_obj = Event.objects.create(
         event_id='ser_test_456',
-        name="Serialized Event",
+        name='Serialized Event',
         start_date=timezone.now(),
         end_date=timezone.now(),
         event_type=EventType.ONLINE.name,
-        category="API",
-        sub_category="REST",
-        load_batch=batch
+        category='API',
+        sub_category='REST',
+        load_batch=batch,
     )
 
     serializer = EventSerializer(instance=event_obj)
     data = serializer.data
 
     expected_keys = {
-        'id', 'event_id', 'name', 'start_date', 'end_date', 'venue_name',
-        'city', 'category', 'sub_category', 'load_batch', 'event_type'
+        'id',
+        'event_id',
+        'name',
+        'start_date',
+        'end_date',
+        'venue_name',
+        'city',
+        'category',
+        'sub_category',
+        'load_batch',
+        'event_type',
     }
 
     assert set(data.keys()) == expected_keys
-    assert data['name'] == "Serialized Event"
+    assert data['name'] == 'Serialized Event'
     assert data['event_type'] == EventType.ONLINE.name
 
 
@@ -47,7 +56,7 @@ def test_event_serializer_deserialization_and_create():
 
     event_data = {
         'id': 1,
-        'event_id':'evt001',
+        'event_id': 'evt001',
         'name': 'Novo Evento via Serializer',
         'start_date': timezone.now(),
         'end_date': timezone.now(),
@@ -56,7 +65,7 @@ def test_event_serializer_deserialization_and_create():
         'city': 'Nova Cidade',
         'category': 'Música',
         'sub_category': 'Rock',
-        'load_batch': batch.id
+        'load_batch': batch.id,
     }
 
     serializer = EventSerializer(data=event_data)

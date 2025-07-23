@@ -185,6 +185,20 @@ Esta abordagem cria um ambiente completo e isolado, idêntico ao que seria usado
     A API estará disponível em `http://localhost/` (ou a porta que você configurou para o Nginx no `docker-compose.yml`). O endpoint completo será, por exemplo, `http://localhost/api/events/`.
 
 
+### Acesse a API e sua Documentação
+
+Após a importação, você pode explorar a API e sua documentação interativa.
+
+-   **Documentação Swagger UI (Recomendado):**
+    Acesse a interface interativa onde você pode ver os endpoints, modelos e até mesmo testar as requisições diretamente do navegador.
+    -   **URL:** `http://localhost/swagger/` (ou a porta que você configurou, ex: `http://localhost:8000/swagger/`)
+
+-   **Endpoint da API de Eventos:**
+    Para acessar os dados brutos da API.
+    -   **URL:** `http://localhost/api/events/`
+    -   **Método:** `GET`
+
+
 ## ✅ Executando os Testes
 
 -   **Localmente (com Poetry ou Venv ativo):**
