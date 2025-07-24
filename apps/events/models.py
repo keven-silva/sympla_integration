@@ -38,14 +38,10 @@ class Event(models.Model):
     )
     name = models.CharField(max_length=255, verbose_name='Event Name')
     start_date = models.DateTimeField(verbose_name='Start Date')
-    end_date = models.DateTimeField(
-        blank=True, null=True, verbose_name='End Date'
-    )
+    end_date = models.DateTimeField(verbose_name='End Date')
     event_type = models.CharField(
         max_length=20,
         choices=EventType.choices(),
-        blank=True,
-        null=True,
         verbose_name='Event Type',
     )
     venue_name = models.CharField(
